@@ -44,7 +44,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,8 +79,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.R
 import com.example.data.GameProgress
-import com.example.data.GameServer
-import com.example.ui.i18n.LocalPixieSocialStrings
 import com.example.ui.i18n.LocalPixieStrings
 import com.example.ui.i18n.PixieStrings
 import com.example.ui.theme.PixieBgCard
@@ -587,13 +584,9 @@ fun PixieStatsHeader(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     compactNumbers: Boolean = false,
-    isSettingsOpen: Boolean = false,
-    currentServer: GameServer? = null,
-    pendingInviteCount: Int = 0,
-    onOpenServerMenu: (() -> Unit)? = null
+    isSettingsOpen: Boolean = false
 ) {
     val s = LocalPixieStrings.current
-    val social = LocalPixieSocialStrings.current
     val (rankTitle, rankColor) = pixieRankInfo(progress, s)
 
     PixieCard(
@@ -697,88 +690,6 @@ fun PixieStatsHeader(
                         imageVector = Icons.Filled.Settings,
                         contentDescription = s.openSettings,
                         tint = if (isSettingsOpen) PixieGold else PixieTextSecondary
-                    )
-                }
-            }
-        }
-
-        if (onOpenServerMenu != null) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .defaultMinSize(minHeight = 48.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(PixieBgDeep.copy(alpha = 0.84f))
-                    .border(
-                        1.dp,
-                        if (pendingInviteCount > 0) PixieGold else PixieCyan.copy(alpha = 0.65f),
-                        RoundedCornerShape(8.dp)
-                    )
-                    .clickable(
-                        role = Role.Button,
-                        indication = ripple(bounded = true, color = PixieCyan),
-                        interactionSource = remember { MutableInteractionSource() },
-                        onClick = onOpenServerMenu
-                    )
-                    .padding(horizontal = 10.dp, vertical = 8.dp)
-                    .testTag("open_server_menu_button"),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Public,
-                    contentDescription = social.serverMenuTitle,
-                    tint = PixieCyan,
-                    modifier = Modifier.size(18.dp)
-                )
-                Text(
-                    text = currentServer?.name ?: social.serverMenuTitle,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = PixieTextPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                if (currentServer != null) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(PixieCyan.copy(alpha = 0.16f))
-                            .border(1.dp, PixieCyan.copy(alpha = 0.65f), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = "${currentServer.playerCount}/${currentServer.maxPlayers}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = PixieCyan,
-                            maxLines = 1,
-                            softWrap = false
-                        )
-                    }
-                }
-                if (pendingInviteCount > 0) {
-                    Box(
-                        modifier = Modifier
-                            .size(9.dp)
-                            .clip(CircleShape)
-                            .background(PixieGold)
-                            .border(1.dp, PixieBgDeep, CircleShape)
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(PixieCyan.copy(alpha = 0.22f))
-                        .border(1.dp, PixieCyan, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = social.serverButtonShort,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = PixieCyan,
-                        maxLines = 1,
-                        softWrap = false
                     )
                 }
             }

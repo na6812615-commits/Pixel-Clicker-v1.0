@@ -1,10 +1,6 @@
 package com.example
 
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
@@ -14,8 +10,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
-import androidx.compose.ui.test.performTextInput
-import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -24,24 +18,15 @@ import com.example.data.AutoSyncInterval
 import com.example.data.CrystalAuraTheme
 import com.example.data.DataStoreSettingsRepository
 import com.example.data.GameProgress
-import com.example.data.GameServer
 import com.example.data.GameSettings
-import com.example.data.ServerPlayer
-import com.example.data.TradeSession
-import com.example.data.TradeStatus
 import com.example.data.VfxIntensity
 import com.example.ui.game.DollarShopTab
-import com.example.ui.game.PixieStatsHeader
 import com.example.ui.game.RestartsTab
-import com.example.ui.game.ServerBrowserDialog
 import com.example.ui.game.SettingsTab
 import com.example.ui.game.ShopTab
 import com.example.ui.game.TapArenaTab
 import com.example.ui.game.TapParticleEvent
-import com.example.ui.game.TradeRoomDialog
-import com.example.ui.i18n.LocalPixieSocialStrings
 import com.example.ui.i18n.LocalPixieStrings
-import com.example.ui.i18n.ViSocialStrings
 import com.example.ui.i18n.pixieStringsFor
 import com.example.ui.theme.PixieClickerTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -415,179 +400,5 @@ class PixieUiLayoutTest {
         assertFalse(loaded.showDollarProgressCard)
 
         writerRepo.reset()
-    }
-
-    @Test
-    fun statsHeader_displaysServerButtonAndOpensMenu() {
-        var opened = false
-        val srv = GameServer(id = "server_1", name = "Pixie Forest #1", playerCount = 7L, maxPlayers = 20L)
-        composeTestRule.setContent {
-            PixieClickerTheme {
-                CompositionLocalProvider(LocalPixieSocialStrings provides ViSocialStrings) {
-                    PixieStatsHeader(
-                        progress = GameProgress(userId = "u1"),
-                        isSyncing = false,
-                        hasUnsavedChanges = false,
-                        onManualSync = {},
-                        onOpenSettings = {},
-                        currentServer = srv,
-                        pendingInviteCount = 1,
-                        onOpenServerMenu = { opened = true }
-                    )
-                }
-            }
-        }
-
-        composeTestRule.onNodeWithTag("open_server_menu_button").assertIsDisplayed().performClick()
-        assertTrue(opened)
-        composeTestRule.onNodeWithText("Pixie Forest #1").assertIsDisplayed()
-        composeTestRule.onNodeWithText("7/20").assertIsDisplayed()
-    }
-
-    @Test
-    fun serverBrowserDialog_searchesServersBlocksFullJoinAndInvitesSameServerPlayer() {
-        var joinedServerId: String? = null
-        var invitedPlayer: ServerPlayer? = null
-        val s1 = GameServer(id = "s1", name = "Pixie Forest #1", region = "SEA", playerCount = 4L, maxPlayers = 20L)
-        val s2Full = GameServer(id = "s2", name = "Crystal Peak #2", region = "EU", playerCount = 20L, maxPlayers = 20L)
-        val s3Open = GameServer(id = "s3", name = "Aurora Oasis #3", region = "Global", playerCount = 12L, maxPlayers = 20L)
-        val partner = ServerPlayer(userId = "u2", serverId = "s1", displayName = "Luna", diem = 300.0, cashDo = 5.0)
-
-        composeTestRule.setContent {
-            var query by remember { mutableStateOf("") }
-            PixieClickerTheme {
-                CompositionLocalProvider(LocalPixieSocialStrings provides ViSocialStrings) {
-                    ServerBrowserDialog(
-                        servers = listOf(s1, s2Full, s3Open),
-                        currentServerId = "s1",
-                        currentServerPlayers = listOf(partner),
-                        currentUserId = "u1",
-                        searchQuery = query,
-                        isJoiningServer = false,
-                        incomingTrades = emptyList(),
-                        outgoingPendingTrades = emptyList(),
-                        compactNumbers = false,
-                        onSearchQueryChange = { query = it },
-                        onJoinServer = { joinedServerId = it },
-                        onInviteTrade = { invitedPlayer = it },
-                        onAcceptInvite = {},
-                        onDeclineOrCancelInvite = {},
-                        onDismiss = {}
-                    )
-                }
-            }
-        }
-
-        // Full server cannot be joined
-        composeTestRule.onNodeWithTag("server_browser_list").performScrollToNode(hasTestTag("server_join_s2"))
-        composeTestRule.onNodeWithTag("server_join_s2").performClick()
-        assertEquals(null, joinedServerId)
-
-        // Open server can be joined
-        composeTestRule.onNodeWithTag("server_browser_list").performScrollToNode(hasTestTag("server_join_s3"))
-        composeTestRule.onNodeWithTag("server_join_s3").performClick()
-        assertEquals("s3", joinedServerId)
-
-        // Same-server player can be invited to trade
-        composeTestRule.onNodeWithTag("server_browser_list").performScrollToNode(hasTestTag("invite_trade_u2"))
-        composeTestRule.onNodeWithTag("invite_trade_u2").performClick()
-        assertEquals("u2", invitedPlayer?.userId)
-
-        // Searching narrows server list live
-        composeTestRule.onNodeWithTag("server_search_input").performTextInput("Aurora")
-        composeTestRule.onNodeWithTag("server_browser_list").performScrollToNode(hasTestTag("server_card_s3"))
-        composeTestRule.onNodeWithTag("server_card_s3").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("server_card_s2").assertDoesNotExist()
-    }
-
-    @Test
-    fun tradeRoomDialog_enforcesBagCapNonEmptyRuleAndImmediateCancel() {
-        var agreedPair: Pair<String, String>? = null
-        var cancelled = false
-        val activeTrade = TradeSession(
-            id = "trade_1",
-            serverId = "s1",
-            senderId = "u1",
-            senderName = "Hero",
-            receiverId = "u2",
-            receiverName = "Nova",
-            participantIds = listOf("u1", "u2"),
-            status = TradeStatus.ACTIVE.firestoreValue
-        )
-
-        composeTestRule.setContent {
-            PixieClickerTheme {
-                CompositionLocalProvider(LocalPixieSocialStrings provides ViSocialStrings) {
-                    TradeRoomDialog(
-                        trade = activeTrade,
-                        currentUserId = "u1",
-                        progress = GameProgress(userId = "u1", diem = 200.0, cashDo = 10.0),
-                        compactNumbers = false,
-                        isTradeBusy = false,
-                        onSetOffer = { _, _ -> },
-                        onToggleAgree = { pts, cash -> agreedPair = pts to cash },
-                        onCancelAndLeave = { cancelled = true },
-                        onDismissTerminal = {}
-                    )
-                }
-            }
-        }
-
-        // Empty both sides -> shows error banner & agree callback does NOT fire
-        composeTestRule.onNodeWithTag("trade_validation_error").performScrollTo().assertIsDisplayed()
-        composeTestRule.onNodeWithTag("trade_agree_button").performScrollTo().performClick()
-        assertEquals(null, agreedPair)
-
-        // Exceeding bag points (500 > 200) -> blocks agree callback
-        composeTestRule.onNodeWithTag("trade_offer_points_input").performScrollTo().performTextReplacement("500")
-        composeTestRule.onNodeWithTag("trade_validation_error").performScrollTo().assertIsDisplayed()
-        composeTestRule.onNodeWithTag("trade_agree_button").performScrollTo().performClick()
-        assertEquals(null, agreedPair)
-
-        // Valid one-sided offer (100 <= 200) -> allows agreeing!
-        composeTestRule.onNodeWithTag("trade_offer_points_input").performScrollTo().performTextReplacement("100")
-        composeTestRule.onNodeWithTag("trade_agree_button").performScrollTo().performClick()
-        assertEquals("100" to "0", agreedPair)
-
-        // Cancel & leave fires immediately
-        composeTestRule.onNodeWithTag("trade_cancel_leave_button").performScrollTo().performClick()
-        assertTrue(cancelled)
-    }
-
-    @Test
-    fun tradeRoomDialog_showsPartnerCancelledNotice() {
-        var dismissed = false
-        val cancelledTrade = TradeSession(
-            id = "trade_2",
-            senderId = "u1",
-            senderName = "Hero",
-            receiverId = "u2",
-            receiverName = "Nova",
-            participantIds = listOf("u1", "u2"),
-            status = TradeStatus.CANCELLED.firestoreValue,
-            cancelledBy = "u2"
-        )
-
-        composeTestRule.setContent {
-            PixieClickerTheme {
-                CompositionLocalProvider(LocalPixieSocialStrings provides ViSocialStrings) {
-                    TradeRoomDialog(
-                        trade = cancelledTrade,
-                        currentUserId = "u1",
-                        progress = GameProgress(userId = "u1"),
-                        compactNumbers = false,
-                        isTradeBusy = false,
-                        onSetOffer = { _, _ -> },
-                        onToggleAgree = { _, _ -> },
-                        onCancelAndLeave = {},
-                        onDismissTerminal = { dismissed = true }
-                    )
-                }
-            }
-        }
-
-        composeTestRule.onNodeWithText(ViSocialStrings.tradePartnerCancelledTitle).assertIsDisplayed()
-        composeTestRule.onNodeWithTag("trade_close_button").performClick()
-        assertTrue(dismissed)
     }
 }
