@@ -1,0 +1,364 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidGameProgress(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.diem is number && data.diem >= 0 &&
+             data.cashDo is number && data.cashDo >= 0 &&
+             data.clickCount is int && data.clickCount >= 0 &&
+             data.muti is number && data.muti >= 1 &&
+             data.muti2 is number && data.muti2 >= 1 &&
+             data.x is number && data.x >= 1 &&
+             data.cd is number && data.cd > 0 && data.cd <= 1 &&
+             data.thay is number && data.thay > 0 && data.thay <= 1 &&
+             data.giamgia is number && data.giamgia >= 1 &&
+             data.thay2 is number && data.thay2 > 0 &&
+             data.cd3 is number && data.cd3 > 0 && data.cd3 <= 1 &&
+             data.cd4 is number && data.cd4 > 0 && data.cd4 <= 1 &&
+             data.lv is int && data.lv >= 0 &&
+             data.gia is number && data.gia >= 25 &&
+             data.lv2 is int && data.lv2 >= 0 &&
+             data.gia2 is number && data.gia2 >= 50 &&
+             data.lv3 is int && data.lv3 >= 0 &&
+             data.gia3 is number && data.gia3 >= 150 &&
+             data.lv4 is int && data.lv4 >= 0 &&
+             data.gia4 is number && data.gia4 >= 75 &&
+             data.lv5 is int && data.lv5 >= 0 &&
+             data.gia5 is number && data.gia5 >= 5 &&
+             data.lv6 is int && data.lv6 >= 0 &&
+             data.gia6 is number && data.gia6 >= 3 &&
+             data.lv7 is int && data.lv7 >= 0 &&
+             data.gia7 is number && data.gia7 >= 3 &&
+             data.gioihan is bool &&
+             data.autoEnabled is bool &&
+             data.x2 is number && data.x2 >= 1 &&
+             data.x2fake is number && data.x2fake >= 1 &&
+             data.cd2 is number && data.cd2 > 0 && data.cd2 <= 1 &&
+             data.lv8 is int && data.lv8 >= 0 &&
+             data.gia8 is number && data.gia8 >= 3 &&
+             data.lv9 is int && data.lv9 >= 0 &&
+             data.gia9 is number && data.gia9 >= 2 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidGameServer(data) {
+      return data.name is string && data.name.size() >= 2 && data.name.size() <= 48 &&
+             data.region is string && data.region.size() >= 1 && data.region.size() <= 20 &&
+             data.maxPlayers is int && data.maxPlayers == 20 &&
+             data.activePlayerIds is list &&
+             data.activePlayerIds.size() <= 20 &&
+             (data.activePlayerIds.size() == 0 || data.activePlayerIds[0] is string) &&
+             data.playerCount is int &&
+             data.playerCount >= 0 &&
+             data.playerCount <= 20 &&
+             data.playerCount == data.activePlayerIds.size() &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidServerPlayer(data, serverId, userId) {
+      return data.userId is string && data.userId == userId && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.serverId is string && data.serverId == serverId && data.serverId.size() <= 128 &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 40 &&
+             data.diem is number && data.diem >= 0 &&
+             data.cashDo is number && data.cashDo >= 0 &&
+             data.restartsLv is int && data.restartsLv >= 0 &&
+             data.online is bool &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidTradeCreate(data) {
+      return isValidId(data.serverId) &&
+             isValidId(data.senderId) &&
+             isValidId(data.receiverId) &&
+             data.senderId != data.receiverId &&
+             data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 40 &&
+             data.receiverName is string && data.receiverName.size() >= 1 && data.receiverName.size() <= 40 &&
+             data.participantIds is list && data.participantIds.size() == 2 &&
+             data.participantIds[0] == data.senderId && data.participantIds[1] == data.receiverId &&
+             isValidTradeMutable(data);
+    }
+
+    function isValidTradeMutable(data) {
+      return data.status in ['pending', 'active', 'completed', 'cancelled'] &&
+             data.cancelledBy is string && data.cancelledBy.size() <= 128 &&
+             data.senderPoints is number && data.senderPoints >= 0 &&
+             data.senderCash is number && data.senderCash >= 0 &&
+             data.receiverPoints is number && data.receiverPoints >= 0 &&
+             data.receiverCash is number && data.receiverCash >= 0 &&
+             data.senderEscrowPoints is number && data.senderEscrowPoints >= 0 &&
+             data.senderEscrowCash is number && data.senderEscrowCash >= 0 &&
+             data.receiverEscrowPoints is number && data.receiverEscrowPoints >= 0 &&
+             data.receiverEscrowCash is number && data.receiverEscrowCash >= 0 &&
+             data.senderAccepted is bool && data.receiverAccepted is bool &&
+             data.senderClaimed is bool && data.receiverClaimed is bool &&
+             data.senderRefunded is bool && data.receiverRefunded is bool &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function canFinishTrade(prev, next, isSender) {
+      let otherAcc = isSender ? prev.receiverAccepted : prev.senderAccepted;
+      let otherEscP = isSender ? prev.receiverEscrowPoints : prev.senderEscrowPoints;
+      let otherEscC = isSender ? prev.receiverEscrowCash : prev.senderEscrowCash;
+      let otherPts = isSender ? prev.receiverPoints : prev.senderPoints;
+      let otherCash = isSender ? prev.receiverCash : prev.senderCash;
+      return otherAcc &&
+             otherEscP == otherPts &&
+             otherEscC == otherCash &&
+             (prev.senderPoints + prev.senderCash + prev.receiverPoints + prev.receiverCash) > 0 &&
+             next.status == 'completed';
+    }
+
+    function isTradeUpdateAllowed(prev, next, changed, uid) {
+      let isSender = uid == prev.senderId;
+      let prevStatus = prev.status;
+      let nextStatus = next.status;
+      return (
+        // 1. Pending -> Active (Receiver accepts) or Cancelled (Either declines/cancels)
+        (prevStatus == 'pending' && (
+          (!isSender && nextStatus == 'active' && changed.hasOnly(['status', 'updatedAt'])) ||
+          (nextStatus == 'cancelled' && next.cancelledBy == uid && changed.hasOnly(['status', 'cancelledBy', 'updatedAt']))
+        )) ||
+        // 2. Active trade actions
+        (prevStatus == 'active' && (
+          // Update own offer (sender or receiver); resets partner acceptance
+          (nextStatus == 'active' && isSender && !prev.senderAccepted && !next.senderAccepted && !next.receiverAccepted &&
+           changed.hasOnly(['senderPoints', 'senderCash', 'receiverAccepted', 'updatedAt'])) ||
+          (nextStatus == 'active' && !isSender && !prev.receiverAccepted && !next.receiverAccepted && !next.senderAccepted &&
+           changed.hasOnly(['receiverPoints', 'receiverCash', 'senderAccepted', 'updatedAt'])) ||
+          // Agree / un-agree & escrow; completes when both agree and at least one side offers > 0
+          (isSender && changed.hasOnly(['senderAccepted', 'senderEscrowPoints', 'senderEscrowCash', 'status', 'updatedAt']) && (
+            (next.senderAccepted && next.senderEscrowPoints == prev.senderPoints && next.senderEscrowCash == prev.senderCash &&
+              (nextStatus == 'active' || canFinishTrade(prev, next, true))) ||
+            (!next.senderAccepted && next.senderEscrowPoints == 0 && next.senderEscrowCash == 0 && nextStatus == 'active')
+          )) ||
+          (!isSender && changed.hasOnly(['receiverAccepted', 'receiverEscrowPoints', 'receiverEscrowCash', 'status', 'updatedAt']) && (
+            (next.receiverAccepted && next.receiverEscrowPoints == prev.receiverPoints && next.receiverEscrowCash == prev.receiverCash &&
+              (nextStatus == 'active' || canFinishTrade(prev, next, false))) ||
+            (!next.receiverAccepted && next.receiverEscrowPoints == 0 && next.receiverEscrowCash == 0 && nextStatus == 'active')
+          )) ||
+          // Cancel active trade immediately
+          (nextStatus == 'cancelled' && next.cancelledBy == uid && (
+            (isSender && !next.senderAccepted && next.senderEscrowPoints == 0 && next.senderEscrowCash == 0 && next.senderRefunded &&
+             changed.hasOnly(['status', 'cancelledBy', 'senderAccepted', 'senderEscrowPoints', 'senderEscrowCash', 'senderRefunded', 'updatedAt'])) ||
+            (!isSender && !next.receiverAccepted && next.receiverEscrowPoints == 0 && next.receiverEscrowCash == 0 && next.receiverRefunded &&
+             changed.hasOnly(['status', 'cancelledBy', 'receiverAccepted', 'receiverEscrowPoints', 'receiverEscrowCash', 'receiverRefunded', 'updatedAt']))
+          ))
+        )) ||
+        // 3. Completed -> Claim partner payout once
+        (prevStatus == 'completed' && nextStatus == 'completed' && (
+          (isSender && !prev.senderClaimed && next.senderClaimed && changed.hasOnly(['senderClaimed', 'updatedAt'])) ||
+          (!isSender && !prev.receiverClaimed && next.receiverClaimed && changed.hasOnly(['receiverClaimed', 'updatedAt']))
+        )) ||
+        // 4. Cancelled -> Refund remaining own escrow once
+        (prevStatus == 'cancelled' && nextStatus == 'cancelled' && (
+          (isSender && !prev.senderRefunded && next.senderRefunded && !next.senderAccepted && next.senderEscrowPoints == 0 && next.senderEscrowCash == 0 &&
+           changed.hasOnly(['senderRefunded', 'senderAccepted', 'senderEscrowPoints', 'senderEscrowCash', 'updatedAt'])) ||
+          (!isSender && !prev.receiverRefunded && next.receiverRefunded && !next.receiverAccepted && next.receiverEscrowPoints == 0 && next.receiverEscrowCash == 0 &&
+           changed.hasOnly(['receiverRefunded', 'receiverAccepted', 'receiverEscrowPoints', 'receiverEscrowCash', 'updatedAt']))
+        ))
+      );
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if false;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       incoming().keys().hasAll([
+                         'userId', 'diem', 'cashDo', 'clickCount', 'muti', 'muti2',
+                         'x', 'cd', 'thay', 'giamgia', 'thay2', 'cd3', 'cd4',
+                         'lv', 'gia', 'lv2', 'gia2', 'lv3', 'gia3', 'lv4', 'gia4',
+                         'lv5', 'gia5', 'lv6', 'gia6', 'lv7', 'gia7',
+                         'gioihan', 'autoEnabled', 'x2', 'x2fake', 'cd2',
+                         'lv8', 'gia8', 'lv9', 'gia9', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'diem', 'cashDo', 'clickCount', 'muti', 'muti2',
+                         'x', 'cd', 'thay', 'giamgia', 'thay2', 'cd3', 'cd4',
+                         'lv', 'gia', 'lv2', 'gia2', 'lv3', 'gia3', 'lv4', 'gia4',
+                         'lv5', 'gia5', 'lv6', 'gia6', 'lv7', 'gia7',
+                         'gioihan', 'autoEnabled', 'x2', 'x2fake', 'cd2',
+                         'lv8', 'gia8', 'lv9', 'gia9', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidGameProgress(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       isValidGameProgress(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'diem', 'cashDo', 'clickCount', 'muti', 'muti2',
+                         'x', 'cd', 'thay', 'giamgia', 'thay2', 'cd3', 'cd4',
+                         'lv', 'gia', 'lv2', 'gia2', 'lv3', 'gia3', 'lv4', 'gia4',
+                         'lv5', 'gia5', 'lv6', 'gia6', 'lv7', 'gia7',
+                         'gioihan', 'autoEnabled', 'x2', 'x2fake', 'cd2',
+                         'lv8', 'gia8', 'lv9', 'gia9', 'updatedAt'
+                       ]);
+
+      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+    }
+
+    match /servers/{serverId} {
+      allow get: if isSignedIn() && isValidId(serverId);
+      allow list: if isSignedIn() && existing().maxPlayers == 20;
+
+      allow create: if isSignedIn() &&
+                       isValidId(serverId) &&
+                       incoming().keys().hasAll([
+                         'name', 'region', 'maxPlayers', 'playerCount', 'activePlayerIds', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'name', 'region', 'maxPlayers', 'playerCount', 'activePlayerIds', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidGameServer(incoming()) &&
+                       incoming().playerCount == 0 &&
+                       incoming().activePlayerIds.size() == 0;
+
+      allow update: if isSignedIn() &&
+                       isValidId(serverId) &&
+                       isValidGameServer(incoming()) &&
+                       incoming().name == existing().name &&
+                       incoming().region == existing().region &&
+                       incoming().maxPlayers == existing().maxPlayers &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['activePlayerIds', 'playerCount', 'updatedAt']) &&
+                       (
+                         (!(request.auth.uid in existing().activePlayerIds) &&
+                          (request.auth.uid in incoming().activePlayerIds) &&
+                          incoming().activePlayerIds.size() == existing().activePlayerIds.size() + 1 &&
+                          incoming().activePlayerIds.hasAll(existing().activePlayerIds)) ||
+                         ((request.auth.uid in existing().activePlayerIds) &&
+                          !(request.auth.uid in incoming().activePlayerIds) &&
+                          incoming().activePlayerIds.size() == existing().activePlayerIds.size() - 1 &&
+                          existing().activePlayerIds.hasAll(incoming().activePlayerIds))
+                       );
+
+      allow delete: if false;
+
+      match /players/{userId} {
+        allow get: if isSignedIn() && isValidId(serverId) && isValidId(userId);
+        allow list: if isSignedIn() && existing().serverId == serverId;
+
+        allow create: if isSignedIn() &&
+                         isValidId(serverId) &&
+                         isValidId(userId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll([
+                           'userId', 'serverId', 'displayName', 'diem', 'cashDo', 'restartsLv', 'online', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'serverId', 'displayName', 'diem', 'cashDo', 'restartsLv', 'online', 'updatedAt'
+                         ]) &&
+                         isValidServerPlayer(incoming(), serverId, userId) &&
+                         exists(/databases/$(database)/documents/servers/$(serverId));
+
+        allow update: if isSignedIn() &&
+                         isValidId(serverId) &&
+                         isValidId(userId) &&
+                         request.auth.uid == userId &&
+                         isValidServerPlayer(incoming(), serverId, userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().serverId == existing().serverId &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'displayName', 'diem', 'cashDo', 'restartsLv', 'online', 'updatedAt'
+                         ]);
+
+        allow delete: if isSignedIn() && isValidId(serverId) && isValidId(userId) && request.auth.uid == userId;
+      }
+    }
+
+    match /trades/{tradeId} {
+      allow get: if isSignedIn() && isValidId(tradeId) && request.auth.uid in existing().participantIds;
+      allow list: if isSignedIn() && request.auth.uid in existing().participantIds;
+
+      allow create: if isSignedIn() &&
+                       isValidId(tradeId) &&
+                       incoming().keys().hasAll([
+                         'serverId', 'senderId', 'senderName', 'receiverId', 'receiverName',
+                         'participantIds', 'status', 'cancelledBy',
+                         'senderPoints', 'senderCash', 'receiverPoints', 'receiverCash',
+                         'senderEscrowPoints', 'senderEscrowCash', 'receiverEscrowPoints', 'receiverEscrowCash',
+                         'senderAccepted', 'receiverAccepted',
+                         'senderClaimed', 'receiverClaimed',
+                         'senderRefunded', 'receiverRefunded',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'serverId', 'senderId', 'senderName', 'receiverId', 'receiverName',
+                         'participantIds', 'status', 'cancelledBy',
+                         'senderPoints', 'senderCash', 'receiverPoints', 'receiverCash',
+                         'senderEscrowPoints', 'senderEscrowCash', 'receiverEscrowPoints', 'receiverEscrowCash',
+                         'senderAccepted', 'receiverAccepted',
+                         'senderClaimed', 'receiverClaimed',
+                         'senderRefunded', 'receiverRefunded',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidTradeCreate(incoming()) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().senderId == request.auth.uid &&
+                       incoming().status == 'pending' &&
+                       incoming().cancelledBy == '' &&
+                       incoming().senderPoints == 0 &&
+                       incoming().senderCash == 0 &&
+                       incoming().receiverPoints == 0 &&
+                       incoming().receiverCash == 0 &&
+                       incoming().senderEscrowPoints == 0 &&
+                       incoming().senderEscrowCash == 0 &&
+                       incoming().receiverEscrowPoints == 0 &&
+                       incoming().receiverEscrowCash == 0 &&
+                       !incoming().senderAccepted &&
+                       !incoming().receiverAccepted &&
+                       !incoming().senderClaimed &&
+                       !incoming().receiverClaimed &&
+                       !incoming().senderRefunded &&
+                       !incoming().receiverRefunded &&
+                       exists(/databases/$(database)/documents/servers/$(incoming().serverId));
+
+      allow update: if isSignedIn() &&
+                       isValidId(tradeId) &&
+                       request.auth.uid in existing().participantIds &&
+                       isValidTradeMutable(incoming()) &&
+                       incoming().serverId == existing().serverId &&
+                       incoming().senderId == existing().senderId &&
+                       incoming().senderName == existing().senderName &&
+                       incoming().receiverId == existing().receiverId &&
+                       incoming().receiverName == existing().receiverName &&
+                       incoming().participantIds == existing().participantIds &&
+                       incoming().createdAt == existing().createdAt &&
+                       isTradeUpdateAllowed(
+                         resource.data,
+                         request.resource.data,
+                         request.resource.data.diff(resource.data).affectedKeys(),
+                         request.auth.uid
+                       );
+
+      allow delete: if false;
+    }
+  }
+}

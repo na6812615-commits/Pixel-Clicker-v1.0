@@ -1,0 +1,459 @@
+{
+  "entities": {
+    "GameProgress": {
+      "title": "GameProgress",
+      "description": "Persistent Pixie Clicker player state including points, cash $, click count, multiplier, upgrade levels, auto clicker settings, and restart prestige tier.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase Auth UID of the player."
+        },
+        "diem": {
+          "type": "number",
+          "description": "Current accumulated points (diem)."
+        },
+        "cashDo": {
+          "type": "number",
+          "description": "Current accumulated cash ($)."
+        },
+        "clickCount": {
+          "type": "integer",
+          "description": "Total click count in current run."
+        },
+        "muti": {
+          "type": "number",
+          "description": "Current point multiplier (he so nhan)."
+        },
+        "muti2": {
+          "type": "number",
+          "description": "Base multiplier carried across Restarts."
+        },
+        "x": {
+          "type": "number",
+          "description": "Base points per manual click."
+        },
+        "cd": {
+          "type": "number",
+          "description": "Manual click cooldown in seconds."
+        },
+        "thay": {
+          "type": "number",
+          "description": "Step reduction applied to manual click cooldown."
+        },
+        "giamgia": {
+          "type": "number",
+          "description": "Discount divisor for Shop and Restarts."
+        },
+        "thay2": {
+          "type": "number",
+          "description": "Increment applied to discount divisor on upgrade."
+        },
+        "cd3": {
+          "type": "number",
+          "description": "Menu exit delay in seconds."
+        },
+        "cd4": {
+          "type": "number",
+          "description": "Notification banner duration in seconds."
+        },
+        "lv": {
+          "type": "integer",
+          "description": "Level of Shop item 1 (+points/click)."
+        },
+        "gia": {
+          "type": "number",
+          "description": "Base cost of Shop item 1."
+        },
+        "lv2": {
+          "type": "integer",
+          "description": "Level of Shop item 2 (+multiplier)."
+        },
+        "gia2": {
+          "type": "number",
+          "description": "Base cost of Shop item 2."
+        },
+        "lv3": {
+          "type": "integer",
+          "description": "Restarts prestige level."
+        },
+        "gia3": {
+          "type": "number",
+          "description": "Base cost of next Restart."
+        },
+        "lv4": {
+          "type": "integer",
+          "description": "Level of Shop item 3 (reduce click cooldown)."
+        },
+        "gia4": {
+          "type": "number",
+          "description": "Base cost of Shop item 3."
+        },
+        "lv5": {
+          "type": "integer",
+          "description": "Level of $Shop item 1 (discount)."
+        },
+        "gia5": {
+          "type": "number",
+          "description": "Cost of $Shop item 1 in $."
+        },
+        "lv6": {
+          "type": "integer",
+          "description": "Level of $Shop item 2 (reduce menu delay)."
+        },
+        "gia6": {
+          "type": "number",
+          "description": "Cost of $Shop item 2 in $."
+        },
+        "lv7": {
+          "type": "integer",
+          "description": "Level of $Shop item 3 (reduce notice duration)."
+        },
+        "gia7": {
+          "type": "number",
+          "description": "Cost of $Shop item 3 in $."
+        },
+        "gioihan": {
+          "type": "boolean",
+          "description": "True if Auto Clicker has not yet been purchased."
+        },
+        "autoEnabled": {
+          "type": "boolean",
+          "description": "True if Auto Clicker is currently active."
+        },
+        "x2": {
+          "type": "number",
+          "description": "Base points per auto click."
+        },
+        "x2fake": {
+          "type": "number",
+          "description": "Next increment bonus for auto click power."
+        },
+        "cd2": {
+          "type": "number",
+          "description": "Auto clicker interval in seconds."
+        },
+        "lv8": {
+          "type": "integer",
+          "description": "Level of Auto Click power upgrade."
+        },
+        "gia8": {
+          "type": "number",
+          "description": "Cost of Auto Click power upgrade in $."
+        },
+        "lv9": {
+          "type": "integer",
+          "description": "Level of Auto Click speed upgrade."
+        },
+        "gia9": {
+          "type": "number",
+          "description": "Cost of Auto Click speed upgrade in $."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "diem",
+        "cashDo",
+        "clickCount",
+        "muti",
+        "muti2",
+        "x",
+        "cd",
+        "thay",
+        "giamgia",
+        "thay2",
+        "cd3",
+        "cd4",
+        "lv",
+        "gia",
+        "lv2",
+        "gia2",
+        "lv3",
+        "gia3",
+        "lv4",
+        "gia4",
+        "lv5",
+        "gia5",
+        "lv6",
+        "gia6",
+        "lv7",
+        "gia7",
+        "gioihan",
+        "autoEnabled",
+        "x2",
+        "x2fake",
+        "cd2",
+        "lv8",
+        "gia8",
+        "lv9",
+        "gia9",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "GameServer": {
+      "title": "GameServer",
+      "description": "Online Pixie Clicker multiplayer realm capped at 20 concurrent players.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique display name of the online server."
+        },
+        "region": {
+          "type": "string",
+          "description": "Server region tag."
+        },
+        "maxPlayers": {
+          "type": "integer",
+          "description": "Maximum allowed players in this server (always 20)."
+        },
+        "playerCount": {
+          "type": "integer",
+          "description": "Current active player count (0..20)."
+        },
+        "activePlayerIds": {
+          "type": "array",
+          "description": "Bounded list of player UIDs currently connected to this server (max 20)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last membership update timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "name",
+        "region",
+        "maxPlayers",
+        "playerCount",
+        "activePlayerIds",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ServerPlayer": {
+      "title": "ServerPlayer",
+      "description": "Public non-PII presence card of a player currently inside an online server.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated UID of the player."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "Server ID where the player is currently connected."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Non-PII in-game player nickname."
+        },
+        "diem": {
+          "type": "number",
+          "description": "Snapshot of player points for lobby display."
+        },
+        "cashDo": {
+          "type": "number",
+          "description": "Snapshot of player cash $ for lobby display."
+        },
+        "restartsLv": {
+          "type": "integer",
+          "description": "Player Restarts prestige level."
+        },
+        "online": {
+          "type": "boolean",
+          "description": "Whether the player is actively connected."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Presence heartbeat timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "serverId",
+        "displayName",
+        "diem",
+        "cashDo",
+        "restartsLv",
+        "online",
+        "updatedAt"
+      ]
+    },
+    "TradeSession": {
+      "title": "TradeSession",
+      "description": "Two-player real-time trade session with escrow settlement between players in the same server.",
+      "type": "object",
+      "properties": {
+        "serverId": {
+          "type": "string",
+          "description": "Server ID where the trade was initiated."
+        },
+        "senderId": {
+          "type": "string",
+          "description": "UID of the player who sent the trade invite."
+        },
+        "senderName": {
+          "type": "string",
+          "description": "In-game display name of the sender."
+        },
+        "receiverId": {
+          "type": "string",
+          "description": "UID of the player who received the trade invite."
+        },
+        "receiverName": {
+          "type": "string",
+          "description": "In-game display name of the receiver."
+        },
+        "participantIds": {
+          "type": "array",
+          "description": "Two-element list [senderId, receiverId] for participant scoping."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "active", "completed", "cancelled"],
+          "description": "Current lifecycle state of the trade."
+        },
+        "cancelledBy": {
+          "type": "string",
+          "description": "UID of the player who cancelled the trade, or empty string."
+        },
+        "senderPoints": {
+          "type": "number",
+          "description": "Points offered by sender."
+        },
+        "senderCash": {
+          "type": "number",
+          "description": "Cash $ offered by sender."
+        },
+        "receiverPoints": {
+          "type": "number",
+          "description": "Points offered by receiver."
+        },
+        "receiverCash": {
+          "type": "number",
+          "description": "Cash $ offered by receiver."
+        },
+        "senderEscrowPoints": {
+          "type": "number",
+          "description": "Points currently escrowed from sender account."
+        },
+        "senderEscrowCash": {
+          "type": "number",
+          "description": "Cash $ currently escrowed from sender account."
+        },
+        "receiverEscrowPoints": {
+          "type": "number",
+          "description": "Points currently escrowed from receiver account."
+        },
+        "receiverEscrowCash": {
+          "type": "number",
+          "description": "Cash $ currently escrowed from receiver account."
+        },
+        "senderAccepted": {
+          "type": "boolean",
+          "description": "True when sender has locked and agreed to the trade."
+        },
+        "receiverAccepted": {
+          "type": "boolean",
+          "description": "True when receiver has locked and agreed to the trade."
+        },
+        "senderClaimed": {
+          "type": "boolean",
+          "description": "True once sender has claimed partner payout after completion."
+        },
+        "receiverClaimed": {
+          "type": "boolean",
+          "description": "True once receiver has claimed partner payout after completion."
+        },
+        "senderRefunded": {
+          "type": "boolean",
+          "description": "True once sender's escrow has been refunded after cancellation."
+        },
+        "receiverRefunded": {
+          "type": "boolean",
+          "description": "True once receiver's escrow has been refunded after cancellation."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "serverId",
+        "senderId",
+        "senderName",
+        "receiverId",
+        "receiverName",
+        "participantIds",
+        "status",
+        "cancelledBy",
+        "senderPoints",
+        "senderCash",
+        "receiverPoints",
+        "receiverCash",
+        "senderEscrowPoints",
+        "senderEscrowCash",
+        "receiverEscrowPoints",
+        "receiverEscrowCash",
+        "senderAccepted",
+        "receiverAccepted",
+        "senderClaimed",
+        "receiverClaimed",
+        "senderRefunded",
+        "receiverRefunded",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/GameProgress"
+      },
+      "description": "Stores each authenticated player's Pixie Clicker game state keyed by their Firebase Auth UID."
+    },
+    "/servers/{serverId}": {
+      "schema": {
+        "$ref": "#/entities/GameServer"
+      },
+      "description": "Named online game servers (max 20 players per server)."
+    },
+    "/servers/{serverId}/players/{userId}": {
+      "schema": {
+        "$ref": "#/entities/ServerPlayer"
+      },
+      "description": "Non-PII presence entries for players currently connected to a server."
+    },
+    "/trades/{tradeId}": {
+      "schema": {
+        "$ref": "#/entities/TradeSession"
+      },
+      "description": "Two-player trade invitations, active offer rooms, and completed/cancelled trade ledgers."
+    }
+  }
+}
